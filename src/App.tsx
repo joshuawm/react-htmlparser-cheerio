@@ -23,6 +23,10 @@ function addNumForArray(arr:Array<object>){
 let interRegExpObj:RegExp
 
 function App() {
+  //dynamic Page
+  const [dynaURl,setDynaURL] = useState(true)
+  //后端页面的
+  const [backURL,setBackURl]  = useState("http://20.212.145.68/get?url=")
   //网址URL
   const [URL,setURL]=useState("https://www.lucasentertainment.com/scenes/play/rudy-gram-slams-steven-angel-in-the-ass")
   //selector
@@ -39,11 +43,17 @@ function App() {
   const [toolDisplay,setToolDisplay]=useState("")
   //内部预制的regex
   const [interReg,setInterReg]=useState("imgFinder")
-  
+  //backend display change
+  const [backendURLChangeClass,setBackendURLChangeClass] = useState("falsed")
   // let selected:Array<ISelectEnv>
 
   const reqHTML=async ()=>{
-   let response = await fetch(`http://171.22.130.109:3000/get?url=${URL}`)
+  let response:Response
+  if(dynaURl){
+    response = await fetch(`${backURL}${URL}`)
+  }else{
+    response = await fetch(URL)
+  }
    let content = await response.text()
    console.log("p是否的undefinded",p==undefined)
    if (response.status!==200){
@@ -137,6 +147,11 @@ function App() {
     internalRegExpChange(interReg)
     return readyReturn
   }
+  const changeBackendURL=()=>{
+    let y = document.querySelector("input.back") as HTMLInputElement
+    setBackURl(y.value)
+    alert("sucess")
+  }
   const internalRegExpChange=(v:string,rerender?:boolean)=>{
     if(rerender){
       setInterReg(v)
@@ -164,20 +179,27 @@ function App() {
   }
   return (
     <div className="App">
+      <div className={backendURLChangeClass}  >
+        <input className='back' value={backURL} onChange={e=>setBackURl(e.target.value)} pattern="https://.+=$"></input>
+        <button onClick={changeBackendURL} >change back URL</button>
+        <button onClick={()=>setBackendURLChangeClass("falsed")}>x</button>
+      </div>
       <div className='GetHtml'>
-        <label>pls get this html </label>
-        <input value={URL} onChange={e=>setURL(e.target.value)} ></input>
-        <button onClick={reqHTML}>Ok</button>
+        <input className='url' value={URL} onChange={e=>setURL(e.target.value)} ></input>
+        <input type="radio" checked={dynaURl} className='dyna' name='dynamicStatus' onChange={e=>setDynaURL(e.target.checked)} value="dynamicEnhanced"></input>
+        <label htmlFor='dynamicEnhanced' >动态页面抓取</label>
+        <button onClick={reqHTML}>Ok</button> 
+        <button onClick={()=>setBackendURLChangeClass("trued")}>changeBackendURL</button>
       </div>
         <div className='leftWorld'>
           <div className='selector'>
               <input name='selector' value={selector} onChange={handleSelect}></input>
           </div>
           <div className='dataDisplay'>
-              <pre className='preRender'>{seleed}</pre>
+              <pre className='preRender left'>{seleed}</pre>
             </div>
         </div>
-        <div className='rightWord'>
+        <div className='rightWord '>
           <span>当前的第几个被选中</span>
           <input value={selecNum} onChange={e=>setSelectNum(e.target.value)}></input>
           <button onClick={()=>{rightEnvArray = selectFurther(originalFromLeft);if(rightEnvArray===null){setToolDisplay("")}else{setToolDisplay(JSON.stringify(rightEnvArray,undefined,2))}}}>select</button>
@@ -198,7 +220,7 @@ function App() {
           <ToDate></ToDate>
           <ToRuntime></ToRuntime>
           <div className='toolDisplay'>
-            <pre className='preRender'>
+            <pre className='preRender right'>
               {toolDisplay}
             </pre>
           </div>

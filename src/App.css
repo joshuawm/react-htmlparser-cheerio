@@ -7,15 +7,32 @@ pre.preRender{
   /* height: 80vh; */
 
 }
+
+div.falsed{
+  display: none;
+}
+div.trued{
+  display: block;
+  text-align: center;
+}
+.left{
+  height: 80vh;
+}
+.right{
+  height: 70vh;
+}
+input.url{
+  width: fit-content;
+}
+input.dyna{
+  margin: 0;
+}
 .GetHtml{
   width: 100%;
   height: 5%;
   text-align: center;
   background-color: bisque;
   border: solid 1px black;
-}
-input{
-  width: 5vw;
 }
 .leftWorld{
   display: inline-block;
