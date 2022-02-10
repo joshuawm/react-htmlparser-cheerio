@@ -26,7 +26,17 @@ function App() {
   //dynamic Page
   const [dynaURl,setDynaURL] = useState(true)
   //后端页面的
-  const [backURL,setBackURl]  = useState("http://20.212.145.68/get?url=")
+  const [backURL,setBackURl]  = useState(()=>{
+    let u = localStorage.getItem("backendurl")
+    let t:string
+    if(u==null){
+      alert("no backend url, pls set first")
+      t=""
+    }else{
+      t=u
+    }
+    return t
+  })
   //网址URL
   const [URL,setURL]=useState("https://www.lucasentertainment.com/scenes/play/rudy-gram-slams-steven-angel-in-the-ass")
   //selector
@@ -49,6 +59,8 @@ function App() {
 
   const reqHTML=async ()=>{
   let response:Response
+  let tempURL= URL
+  setURL("loading...........")
   if(dynaURl){
     response = await fetch(`${backURL}${URL}`)
   }else{
@@ -63,6 +75,7 @@ function App() {
       p.Change(content)
       alert("success! continue")
    }
+   setURL(tempURL)
   }
   const handleSelect=(e:ChangeEvent<HTMLInputElement>)=>{
     setSelector(e.target.value)
@@ -150,6 +163,7 @@ function App() {
   const changeBackendURL=()=>{
     let y = document.querySelector("input.back") as HTMLInputElement
     setBackURl(y.value)
+    localStorage.setItem("backendurl",y.value)
     alert("sucess")
   }
   const internalRegExpChange=(v:string,rerender?:boolean)=>{
