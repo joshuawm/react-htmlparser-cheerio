@@ -28,6 +28,7 @@ interface IRegExpExec{
 export class HtmlParser{
     public parser:CheerioAPI
     public metadata:Imetadata
+    public vars:object|null
 
     //regexp
     static imgFinder:RegExp = /("|')(?<link>https:\/\/[^\s'"]+(jpg|jpeg|bmp|gif|png|webp)[^\s'"]*)\1/gm
@@ -38,8 +39,13 @@ export class HtmlParser{
     static dateRegex:RegExp = /(?<month>\S+)(\/|-|\.| )(?<day>[0-9]+).*(\/|-|\.| )(?<year>[0-9]+)/gm;
 
 
-    constructor(content:string,previousData?:Imetadata){
+    constructor(content:string,vars?:object,previousData?:Imetadata){
         this.parser=cheerio.load(content)
+        if(vars){
+            this.vars=vars
+        }else{
+            this.vars=null
+        }
         if(previousData){
             this.metadata=previousData
         }else{
@@ -47,8 +53,13 @@ export class HtmlParser{
         }
     }
 
-    Change(content:string,previousData?:Imetadata){
+    Change(content:string,vars?:object,previousData?:Imetadata){
         this.parser=cheerio.load(content)
+        if(vars){
+            this.vars=vars
+        }else{
+            this.vars=null
+        }
         if(previousData){
             this.metadata=previousData
         }else{
@@ -155,5 +166,18 @@ export class HtmlParser{
 
         }
         this.metadata[key]=callback(envs)
+    }
+    ParseVars(key:string,VarKey:string){
+        let vars = this.vars
+        let result:any
+        try{
+            result= eval(VarKey)
+        }catch(e){
+            result=null
+        }
+        if(result!=null){
+            this.metadata[key]=result
+        }
+        
     }
 }

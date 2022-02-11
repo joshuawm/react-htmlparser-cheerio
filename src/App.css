@@ -21,6 +21,9 @@ div.trued{
 .right{
   height: 70vh;
 }
+button.backendURLButton{
+  float: right;
+}
 input.url{
   width: fit-content;
 }

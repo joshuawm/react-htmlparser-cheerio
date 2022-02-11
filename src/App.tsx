@@ -3,7 +3,14 @@ import { ChangeEvent, useState } from 'react'
 import "./App.css"
 import cheerio from "cheerio"
 import {HtmlParser,ISelectEnv} from "./htmlparser"
-import { render } from 'react-dom'
+
+interface response {
+  status:boolean
+  html:string
+  err:string|null
+  vars:object|string
+}
+
 
 const p = new HtmlParser("")
 let originalFromLeft:ISelectEnv[]
@@ -39,6 +46,9 @@ function App() {
   })
   //网址URL
   const [URL,setURL]=useState("https://www.lucasentertainment.com/scenes/play/rudy-gram-slams-steven-angel-in-the-ass")
+  //variableName
+  const[variableString,setVariableString] = useState("")
+  const[varDisable,setVarDisable] = useState(false)
   //selector
   const [selector,setSelector]=useState("")
   //左侧的数据展示页面
@@ -58,32 +68,50 @@ function App() {
   // let selected:Array<ISelectEnv>
 
   const reqHTML=async ()=>{
-  let response:Response
-  let tempURL= URL
-  setURL("loading...........")
-  if(dynaURl){
-    response = await fetch(`${backURL}${URL}`)
-  }else{
-    response = await fetch(URL)
-  }
-   let content = await response.text()
-   console.log("p是否的undefinded",p==undefined)
-   if (response.status!==200){
-     alert("获取失败 请检查链接是否存在并重试")
-     p.Change("")
-   }else{
-      p.Change(content)
-      alert("success! continue")
-   }
-   setURL(tempURL)
+    let response:Response
+    let tempURL= URL
+    setURL("loading...........")
+    if(dynaURl){
+      if(variableString==""){
+        response = await fetch(`${backURL}${URL}`)
+      }else{
+        response = await fetch(`${backURL}${URL}&varName=${variableString}`)
+      }
+    }else{
+      response = await fetch(`${backURL}${URL}&dyna=fla`)
+    }
+    let result:response = await response.json() as response
+    setURL(tempURL) 
+    if(result.status){
+      alert("Success!")
+      if(result.vars==""){
+        p.Change(result.html)
+      }else if(typeof result.vars=="object"){
+        p.Change(result.html,result.vars)
+      }else{
+        alert("failed to change,try again!")
+      }}else{
+      alert("fail!")
+    }
+       
   }
   const handleSelect=(e:ChangeEvent<HTMLInputElement>)=>{
-    setSelector(e.target.value)
-    let tr = p?.selector(e.target.value)
-    let tt= addNumForArray(tr)
-    originalFromLeft=tr
-    setSeleed(JSON.stringify(tt,null,2))
-    
+    let pp = e.target.value
+    setSelector(pp)
+    let vars= p.vars
+    if(/vars.*/.test(pp)){
+      try{
+        let j = JSON.stringify(eval(pp),null,2)
+        setSeleed(j)
+      }catch(e){
+        setSeleed(JSON.stringify(e))
+      }
+    }else{
+      let tr = p?.selector(e.target.value)
+      let tt= addNumForArray(tr)
+      originalFromLeft=tr
+      setSeleed(JSON.stringify(tt,null,2))
+    }
   }
   const selectFurther=(op:ISelectEnv[])=>{
     if(selecNum=="-1"){
@@ -191,6 +219,16 @@ function App() {
         break
     }
   }
+
+  const varDiability=()=>{
+    setDynaURL(!dynaURl)
+    if(dynaURl){
+      setVarDisable(true)
+    }else{
+      setVarDisable(false)
+    }
+  }
+
   return (
     <div className="App">
       <div className={backendURLChangeClass}  >
@@ -198,13 +236,16 @@ function App() {
         <button onClick={changeBackendURL} >change back URL</button>
         <button onClick={()=>setBackendURLChangeClass("falsed")}>x</button>
       </div>
+
       <div className='GetHtml'>
-        <input className='url' value={URL} onChange={e=>setURL(e.target.value)} ></input>
-        <input type="radio" checked={dynaURl} className='dyna' name='dynamicStatus' onChange={e=>setDynaURL(e.target.checked)} value="dynamicEnhanced"></input>
-        <label htmlFor='dynamicEnhanced' >动态页面抓取</label>
+        <input className='url' value={URL} onChange={e=>setURL(e.target.value)} placeholder="url to be scrpaed" ></input>
+        <input className='vari' value={variableString} onChange={e=>setVariableString(e.target.value)} disabled={varDisable} placeholder="varibaleName" ></input>
+        <input type="radio" checked={dynaURl} className='dyna' name='dynamicStatus'onClick={varDiability}  value="dynamicEnhanced"></input>
+        <label htmlFor='dynamicEnhanced' >动态页面抓取增强</label>
         <button onClick={reqHTML}>Ok</button> 
-        <button onClick={()=>setBackendURLChangeClass("trued")}>changeBackendURL</button>
+        <button onClick={()=>setBackendURLChangeClass("trued")} className="backendURLButton" >changeBackendURL</button>
       </div>
+
         <div className='leftWorld'>
           <div className='selector'>
               <input name='selector' value={selector} onChange={handleSelect}></input>
@@ -213,10 +254,12 @@ function App() {
               <pre className='preRender left'>{seleed}</pre>
             </div>
         </div>
+
         <div className='rightWord '>
           <span>当前的第几个被选中</span>
           <input value={selecNum} onChange={e=>setSelectNum(e.target.value)}></input>
           <button onClick={()=>{rightEnvArray = selectFurther(originalFromLeft);if(rightEnvArray===null){setToolDisplay("")}else{setToolDisplay(JSON.stringify(rightEnvArray,undefined,2))}}}>select</button>
+          
           <div className='regexExtrac'>
             <span>regexExp    </span>
             <select value={selectedAttr} onChange={(e)=>setSelectedAttr(e.target.value)}>
@@ -240,6 +283,7 @@ function App() {
           </div>
 
         </div>
+
       </div>
   )
 }
