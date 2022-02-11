@@ -45,9 +45,22 @@ function App() {
     return t
   })
   //网址URL
-  const [URL,setURL]=useState("https://www.lucasentertainment.com/scenes/play/rudy-gram-slams-steven-angel-in-the-ass")
+  const [URL,setURL]=useState(()=>{
+    let t = localStorage.getItem("url")
+    if(t==null){
+      t=""
+    }
+    return t
+  })
   //variableName
-  const[variableString,setVariableString] = useState("")
+  const[variableString,setVariableString] = useState(()=>{
+    let t = localStorage.getItem("variableString")
+    if(t==null){
+      t=""
+    }
+    return t
+
+  })
   const[varDisable,setVarDisable] = useState(false)
   //selector
   const [selector,setSelector]=useState("")
@@ -229,6 +242,11 @@ function App() {
     }
   }
 
+  const localStorageChanger=(key:string,value:string,setFunc:React.Dispatch<React.SetStateAction<string>>)=>{
+      localStorage.setItem(key,value)
+      setFunc(value)
+  }
+
   return (
     <div className="App">
       <div className={backendURLChangeClass}  >
@@ -238,8 +256,8 @@ function App() {
       </div>
 
       <div className='GetHtml'>
-        <input className='url' value={URL} onChange={e=>setURL(e.target.value)} placeholder="url to be scrpaed" ></input>
-        <input className='vari' value={variableString} onChange={e=>setVariableString(e.target.value)} disabled={varDisable} placeholder="varibaleName" ></input>
+        <input className='url' value={URL} onChange={e=>localStorageChanger("url",e.target.value,setURL)} placeholder="url to be scrpaed" ></input>
+        <input className='vari' value={variableString} onChange={e=>localStorageChanger("variableString",e.target.value,setVariableString)} disabled={varDisable} placeholder="varibaleName" ></input>
         <input type="radio" checked={dynaURl} className='dyna' name='dynamicStatus'onClick={varDiability}  value="dynamicEnhanced"></input>
         <label htmlFor='dynamicEnhanced' >动态页面抓取增强</label>
         <button onClick={reqHTML}>Ok</button> 
